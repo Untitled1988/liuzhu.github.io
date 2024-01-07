@@ -4,11 +4,11 @@
   
     
     <entry>
-      <title>Snowflake</title>
+      <title>Snowflake❄</title>
       <link href="/Snowflake/"/>
       <url>/Snowflake/</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<h1 id="Snowflake：一个革命性的云数据平台"><a href="#Snowflake：一个革命性的云数据平台" class="headerlink" title="Snowflake：一个革命性的云数据平台"></a>Snowflake：一个革命性的云数据平台</h1><h2 id="1-什么是Snowflake？"><a href="#1-什么是Snowflake？" class="headerlink" title="1. 什么是Snowflake？"></a>1. 什么是Snowflake？</h2><p>&emsp;&emsp;Snowflake是一种云数据仓库，它提供了一个全面的、基于SQL的数据分析解决方案。Snowflake以其独特的架构和优秀的性能，赢得了许多企业的青睐。它的设计理念是将计算和存储分离，使得用户可以独立地调整这两个方面，以满足自身的需求。</p><h2 id="2-Snowflake的特点"><a href="#2-Snowflake的特点" class="headerlink" title="2. Snowflake的特点"></a>2. Snowflake的特点</h2><h3 id="2-1-传统数仓-计算与存储耦合"><a href="#2-1-传统数仓-计算与存储耦合" class="headerlink" title="2.1 传统数仓 - 计算与存储耦合"></a>2.1 传统数仓 - 计算与存储耦合</h3><p float="center">  <img src="shared-nothing.png" width="500" /></p><p>&emsp;&emsp;传统数据仓库的主流做法是计算存储耦合的(<strong>Shared-nothing Architecture</strong>)，在这个架构里每个节点有自己的计算资源和存储空间，数据会横向的分布到每个节点之间。计算时每个节点都只需要处理位于这个几点上的数据即可。<br>&emsp;&emsp;这个架构的优势在理论上速度很快，降低了数据在节点之间传输的时间，数据处理的过程中也不会出现争抢资源的情况；但这个架构的缺点也存在如下几方面：  </p><ul><li>数据量不均匀，因为需要提前把数据分配到各个节点，而每个节点只对自己拥有的数据负责；  </li><li>增加或减少节点的操作非常麻烦，大量的数据都需要重新洗牌；  </li><li>无法单独增加计算资源或存储资源，计算存储是耦合的，所以在增加硬盘资源的同时，也会增加计算资源，但是这个计算资源很可能是不需要的。</li></ul><h3 id="2-2-Snowflake-计算与存储分离"><a href="#2-2-Snowflake-计算与存储分离" class="headerlink" title="2.2 Snowflake - 计算与存储分离"></a>2.2 Snowflake - 计算与存储分离</h3><p float="center">  <img src="architecture.png" width="1000" /></p><p>&emsp;&emsp;为了解决传统数仓的痛点，Snowflake提出了计算层和存储层分离的架构(<strong>Shared-data Architecture</strong>)。在这个架构中，存储层只负责存储数据，计算层只负责计算。每次计算的过程中，计算节点会先从存储层均匀的获得数据，然后在节点中完成计算。<br>&emsp;&emsp;在这个架构下可以自由的单独增减计算资源或存储空间。计算层是Shared-nothing的Virtual Warehouse，由EC2的Cluster组成，每个EC2是一个Worker Node，包含本地的Local Disk作为Table Data Cache。如果Query很复杂，可以选择增加每个Virtual Warehouse的计算节点的数量；如果并发性很重要，那就可以选择增加Virtual Warehouse的数量。当使用完毕后，可以关闭所有的Virtual Warehouse，这样只需要为存储空间付费，而不需要为计算资源付费。<br>&emsp;&emsp;存储层是Amazon S3(目前也支持Microsoft Azure 和Google Cloud Platform)，可以认为拥有无限容量+不会丢数据+超低成本。 </p><blockquote><p>微软对snowflake的支持，可以从三个方面细谈。第一，云服务商业模式很简单，就是靠scale来吸引consumption。所以对微软来说，提供对snowflake的支持虽然从某种意义上在“打击”自家的数据服务，但是反过来想，snowflake的客户可以把数据放在Azure上了。这个逻辑就是，不管你用什么解决方案，只要你的数据在我手里，我就支持。第二，未来趋势是multi-cloud，也就是说尽量不把鸡蛋放一个篮子里，用来分摊技术和商业的风险。Multi-cloud solution关键就是要easy to migrate，如果微软只想着防守，那客户就永远不能从AWS转到Azure上，相反，提供Snowflake on Azure，就是给AWS客户转化的机会。有机会可以看一下snowflake的新一轮融资，Salesforce领投，更是坚定了data sharing的战略路线。第三，从战略上讲不仅要培养好的伙伴，更要培养好的竞争对手。Snowflake还不明显，Azure Databricks才是最有意思的案例。Azure Databricks已经是Azure first tier service 很多人甚至以为Databricks就是微软的。云计算就是让客户怎么舒服怎么来，如果有好的技术，平台就应该吸引。</p></blockquote><h3 id="2-3-性能优化"><a href="#2-3-性能优化" class="headerlink" title="2.3 性能优化"></a>2.3 性能优化</h3><p>&emsp;&emsp;虽然Snowflake解决了传统数仓的痛点，但是传统数仓的优点，也就是性能，恰恰是Snowflake的缺点，所以Snowflake做了几件事来优化性能：</p><div style="display: flex; justify-content: space-around;">  <figure>    <img src="localcaching.png" width="400" />    <figcaption style="text-align: center;">Local Caching</figcaption>  </figure></div><ul><li><strong>Local Caching</strong>： 每个节点都会保存一些常用的数据在本地的硬盘上，这些数据相当于cache，查询时会按照<a href="https://baike.baidu.com/item/LRU"><strong>LRU</strong></a>的方法逐渐替换掉local cache中的data。在分配任务时，服务层会采用一次性Hash的方法给每个节点分配任务，尽可能地增加cache hit rate，从而减少计算层和存储层之间的传输，达到加速的目的。</li></ul><div style="display: flex; justify-content: space-around;">  <figure>    <img src="filestealing.png" width="400" />    <figcaption style="text-align: center;">File Stealing1</figcaption>  </figure>  <figure>    <img src="filestealing2.png" width="400" />    <figcaption style="text-align: center;">File Stealing2</figcaption>  </figure></div><ul><li><strong>File Stealing</strong>： 假设有两个计算节点，每个节点都被分配了三个文件。节点1很快地完成了三个文件的扫描，节点2却一个文件都没有完成。那么这个时候，节点1会在征得节点2同意的情况下，把节点2其中一个文件所有权转移给自己。这样的话节点1处理的快，多处理一个文件，节点2少处理一个文件，也就达到了加速的目的。</li></ul><div style="display: flex; justify-content: space-around;">  <figure>    <img src="storage.png" width="500" />    <figcaption style="text-align: center;">Storage1</figcaption>  </figure>  <figure>    <img src="storage2.png" width="400" />    <figcaption style="text-align: center;">Storage2</figcaption>  </figure></div><ul><li><strong>Storage</strong>： 第三个优化也就是存储层的优化，所有的表格文件在存储的时候都会被横向切割成n块，每一块使用列式存储的方式，存储在Amazon S3中。并且每一个文件块都会有一个header，来存储每一列的存储位置(offset)，这些文件块的信息都会被保存到服务层。当用户发送一个query请求，服务层会根据query精确的指出所需要的数据在存储层的位置，从而减少不必要的内容读取，达到加速的目的</li></ul><h2 id="3-总结"><a href="#3-总结" class="headerlink" title="3. 总结"></a>3. 总结</h2><p>&emsp;&emsp;Snowflake是一个强大的云数据平台，它提供了一种简单，高效，灵活的方式来处理和分析数据。无论你是一个小型团队，还是一个大型企业，Snowflake都能够满足你的需求。  </p><p>未完。。。</p><p><strong>参考资料：</strong><br><a href="https://pages.cs.wisc.edu/~remzi/Classes/739/Fall2018/Papers/p215-dageville-snowflake.pdf">[1]Dageville, Benoît, Cruanes T , Zukowski M ,et al.The Snowflake Elastic Data Warehouse.[C]&#x2F;&#x2F;ACM.ACM, 2016.DOI:10.1145&#x2F;2882903.2903741.</a><br><a href="https://www.bilibili.com/video/BV1oK41137AX">https://www.bilibili.com/video/BV1oK41137AX</a><br><a href="https://zhuanlan.zhihu.com/p/54439354">https://zhuanlan.zhihu.com/p/54439354</a><br><a href="https://zhuanlan.zhihu.com/p/594213354">https://zhuanlan.zhihu.com/p/594213354</a><br><a href="https://developer.aliyun.com/article/789944">https://developer.aliyun.com/article/789944</a><br><a href="https://zhuanlan.zhihu.com/p/366369705">https://zhuanlan.zhihu.com/p/366369705</a><br><a href="https://www-conf.slac.stanford.edu/xldb2016/talks/published/Tues_7_Marcin_Z_XLDB-2016-05-24-release.pdf">https://www-conf.slac.stanford.edu/xldb2016/talks/published/Tues_7_Marcin_Z_XLDB-2016-05-24-release.pdf</a>  </p>]]></content>
       
       
       <categories>
@@ -67,11 +67,11 @@
     
     
     <entry>
-      <title>友情链接</title>
-      <link href="/link/index.html"/>
-      <url>/link/index.html</url>
+      <title></title>
+      <link href="/css/modify.css"/>
+      <url>/css/modify.css</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[#page-header {  background: transparent !important;}#page-header.post-bg,#page-header.not-home-page {  height: 280px !important;}#page-header #post-info {  bottom: 40px !important;}#page-header #page-site-info {  top: 140px !important;}@media screen and (max-width: 768px) {  #page-header.not-home-page {    height: 200px !important;  }  #page-header #post-info {    bottom: 10px !important;  }  #page-header #page-site-info {    top: 100px !important;  }}.top-img {  height: 250px;  margin: -50px -40px 50px;  border-top-left-radius: inherit;  border-top-right-radius: inherit;  background-position: center center;  background-size: cover;  -webkit-transition: all 0.3s;  -moz-transition: all 0.3s;  -o-transition: all 0.3s;  -ms-transition: all 0.3s;  transition: all 0.3s;}@media screen and (max-width: 768px) {  .top-img {    height: 230px;    margin: -36px -14px 36px;  }}[data-theme='dark'] .top-img {  filter: brightness(0.8);}#footer:before {  background-color: rgba(255,255,255,0.5);}[data-theme='dark'] #footer:before {  background-color: rgba(0,0,0,0.5);}#footer-wrap,#footer-wrap a {  color: #111;  -webkit-transition: unset;  -moz-transition: unset;  -o-transition: unset;  -ms-transition: unset;  transition: unset;}[data-theme='dark'] #footer-wrap,[data-theme='dark'] #footer-wrap a {  color: var(--light-grey);}]]></content>
       
     </entry>
     
@@ -111,9 +111,9 @@
     
     
     <entry>
-      <title>标签</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>音乐</title>
+      <link href="/music/index.html"/>
+      <url>/music/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
@@ -122,9 +122,20 @@
     
     
     <entry>
-      <title>音乐</title>
-      <link href="/music/index.html"/>
-      <url>/music/index.html</url>
+      <title>友情链接</title>
+      <link href="/link/index.html"/>
+      <url>/link/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>标签</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       
